@@ -3,7 +3,7 @@
 ## 2022
 - [x] [A. Finding Maximal Non-Trivial Monotones](https://codeforces.com/gym/103960/problem/A) | [solução](2022-2023/exA.cpp)
 - [ ] [B. Fun with Stones](https://codeforces.com/gym/103960/problem/B) | [solução]()
-- [ ] [C. Cutting with Lasers](https://codeforces.com/gym/103960/problem/C) | [solução]
+- [ ] [C. Cutting with Lasers](https://codeforces.com/gym/103960/problem/C) | [solução]()
 - [ ] [D. Displacing Particles](https://codeforces.com/gym/103960/problem/D) | [solução]()
 - [ ] [E. Eliminating Ballons](https://codeforces.com/gym/103960/problem/E) | [solução]()
 - [ ] [F. Multidimensional Hangman](https://codeforces.com/gym/103960/problem/F) | [solução]()
