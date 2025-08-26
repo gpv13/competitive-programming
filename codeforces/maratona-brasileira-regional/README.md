@@ -1,4 +1,4 @@
-# Maratona de programação
+# Maratona de programação regional brasileira
 
 ## 2022
 - [x] [A. Finding Maximal Non-Trivial Monotones](https://codeforces.com/gym/103960/problem/A) | [solução](2022-2023/exA/exA.cpp)
