@@ -299,4 +299,179 @@ long long binpow(long long a, long long b, long long m) {
     }
     return res;
 }
+
+```
+
+## Geometria 2D
+
+### Template Básico para Geometria 2D
+Este template define uma estrutura point para representar pontos ou vetores em um plano 2D e inclui as operações geométricas mais comuns. A precisão de ponto flutuante é tratada com uma constante EPS.
+```cpp
+#include <bits/stdc++.h>
+#define REP(i,n) for(int i=0;i<(int)n;++i)
+#define EACH(i,c) for(__typeof((c).begin()) i=(c).begin(); i!=(c).end(); ++i)
+#define ALL(c) (c).begin(), (c).end()
+#define SIZE(x) (int((x).size()))
+#define MAXSZ 1000
+
+using namespace std;
+
+const int INF = 0x3F3F3F3F;
+const double PI = 2*acos(0);
+const double EPS = 1e-10;
+
+/*
+ * Função de Comparação de 2 valores
+ *
+ * Parametros:
+ * double x;
+ * double y;
+ *
+ * Retorna:
+ * -1 se x < y
+ * 0 se x == y
+ * 1 se x > y
+ */
+inline int cmp(double x, double y=0, double tol=EPS)
+{
+    return (x<=y+tol) ? (x+tol<y) ? -1 : 0 : 1;
+}
+
+/* Estrutura de dados para pontos */
+
+struct point
+{
+    double x, y;
+
+    point(double x = 0, double y = 0): x(x), y(y) {}
+
+    point operator +(point q) { return point(x + q.x, y + q.y); }
+    point operator -(point q) { return point(x - q.x, y - q.y); }
+    point operator *(double t) { return point(x * t, y * t); }
+    point operator /(double t) { return point(x / t, y / t); }
+    double operator *(point q) { return x * q.x + y * q.y; }
+    double operator %(point q) { return x * q.y - y * q.x; }
+
+    int cmp(point q) const {
+        if (int t = ::cmp(x, q.x)) return t;
+        return ::cmp(y, q.y);
+    }
+
+    bool operator ==(point q) const { return cmp(q) == 0; }
+    bool operator !=(point q) const { return cmp(q) != 0; }
+    bool operator <(point q) const { return cmp(q) < 0; }
+    bool operator >(point q) const { return cmp(q) > 0; }
+    bool operator <=(point q) const { return cmp(q) <= 0; }
+    bool operator >=(point q) const { return cmp(q) >= 0; }
+
+    friend ostream& operator <<(ostream& o, point p) {
+        return o << "(" << p.x << ", " << p.y << ")";
+    }
+
+    static point pivot;
+};
+
+point point::pivot;
+
+double abs(point p) { return hypot(p.x, p.y); }
+double arg(point p) { return atan2(p.y, p.x); }
+
+typedef vector<point> polygon;
+typedef pair<point, double> circle;
+
+int ccw(point p, point q, point r)
+{
+    return cmp((p - r) % (q - r));
+}
+```
+### Template Básico para Geometria 2D (Gemini)
+Este template define uma estrutura point para representar pontos ou vetores em um plano 2D e inclui as operações geométricas mais comuns. A precisão de ponto flutuante é tratada com uma constante EPS.
+```cpp
+#include <iostream>
+#include <vector>
+#include <cmath>
+#include <algorithm>
+
+using namespace std;
+
+const double EPS = 1e-9;
+
+// Retorna -1 se x < 0, 0 se x == 0, 1 se x > 0
+int sgn(double x) {
+    return (x > EPS) - (x < -EPS);
+}
+
+struct point {
+    double x, y;
+
+    // Construtores
+    point() : x(0), y(0) {}
+    point(double x, double y) : x(x), y(y) {}
+
+    // Operadores
+    point operator+(const point& o) const { return point(x + o.x, y + o.y); }
+    point operator-(const point& o) const { return point(x - o.x, y - o.y); }
+    point operator*(double s) const { return point(x * s, y * s); }
+    point operator/(double s) const { return point(x / s, y / s); }
+
+    // Comparações (considerando EPS)
+    bool operator==(const point& o) const {
+        return sgn(x - o.x) == 0 && sgn(y - o.y) == 0;
+    }
+    bool operator<(const point& o) const {
+        if (sgn(x - o.x) != 0) return x < o.x;
+        return y < o.y;
+    }
+
+    // Métodos
+    double norm_sq() const { return x * x + y * y; }
+    double norm() const { return sqrt(norm_sq()); }
+    point unit() const { return *this / norm(); }
+};
+
+// Produto escalar
+double dot(point p, point q) {
+    return p.x * q.x + p.y * q.y;
+}
+
+// Produto vetorial (2D)
+double cross(point p, point q) {
+    return p.x * q.y - p.y * q.x;
+}
+
+// Distância euclidiana entre dois pontos
+double dist(point p, point q) {
+    return (p - q).norm();
+}
+
+// Área de um triângulo a partir de seus vértices
+double area(point p, point q, point r) {
+    return fabs(cross(q - p, r - p)) / 2.0;
+}
+
+// Define um polígono como um vetor de pontos
+typedef vector<point> polygon;
+
+// Área de um polígono (fórmula de Shoelace)
+// A área é positiva se os vértices estiverem em sentido anti-horário, negativa caso contrário.
+double signed_area(const polygon& p) {
+    double area = 0;
+    int n = p.size();
+    for (int i = 0; i < n; i++) {
+        area += cross(p[i], p[(i + 1) % n]);
+    }
+    return area / 2.0;
+}
+
+// Verifica se um ponto está dentro de um polígono (algoritmo do número de enrolamento)
+// Funciona para polígonos simples (não auto-intersecantes).
+bool is_inside(const polygon& P, point p) {
+    double angle = 0;
+    int n = P.size();
+    for(int i = 0; i < n; i++) {
+        point p1 = P[i], p2 = P[(i + 1) % n];
+        angle += atan2(cross(p1 - p, p2 - p), dot(p1 - p, p2 - p));
+    }
+    return sgn(angle) != 0;
+}
 ```
