@@ -3,6 +3,7 @@
 ## Índice
 - [Grafos](#grafos)
 - [Matemática](#matemática)
+- [Geometria 2D](#geometria2d)
 - [Strings](#strings)
 - [Estruturas de Dados](#estruturas-de-dados)
 
@@ -475,3 +476,4 @@ bool is_inside(const polygon& P, point p) {
     return sgn(angle) != 0;
 }
 ```
+
