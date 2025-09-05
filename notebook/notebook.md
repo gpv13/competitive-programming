@@ -51,7 +51,6 @@ Dec Hex Char | Dec Hex Char | Dec Hex Char | Dec Hex Char
 
 ### BFS
 Busca em largura em **O(V+E)**.
-
 ```cpp
 // BFS - O(V + E)
 vector<vector<int>> adj;   // lista de adjacência
@@ -349,6 +348,158 @@ int gcd(int a, int b) {
     }
     return a;
 }
+```
+### MMC - Mínimo Múltiplo Comum (LCM)
+```cpp
+int lmc(int m, int n){
+    return (m * n) / gcd(m, n);
+}
+```
+### Conversão de Bases Numéricas
+#### De Decimal (Base 10) para Base B
+Usa o método de divisões sucessivas. O resultado é uma string, pois pode conter caracteres (ex: 'A', 'F' para hexadecimal).
+```cpp
+#include <bits/stdc++.h>
+
+using namespace std;
+
+// Converte um número 'n' da base 10 para uma base 'b' (2 <= b <= 36).
+string from_decimal(long long n, int b) {
+    if (n == 0) {
+        return "0";
+    }
+    
+    string result = "";
+    while (n > 0) {
+        int remainder = n % b;
+        if (remainder < 10) {
+            // Converte o resto numérico para seu caractere '0'-'9'
+            result += to_string(remainder);
+        } else {
+            // Converte o resto numérico para seu caractere 'A'-'Z'
+            result += (char)('A' + (remainder - 10));
+        }
+        n /= b;
+    }
+    
+    // Os restos foram coletados na ordem inversa, então revertemos a string.
+    reverse(result.begin(), result.end());
+    return result;
+}
+```
+#### De Base B para Decimal (Base 10)
+```cpp
+#include <bits/stdc++.h>
+
+using namespace std;
+
+// Converte uma string 'num' na base 'b' para a base 10 (decimal).
+long long to_decimal(const string& num, int b) {
+    long long result = 0;
+    long long power = 1;
+
+    // Itera pela string da direita para a esquerda.
+    for (int i = num.length() - 1; i >= 0; i--) {
+        int digit_value;
+        if (num[i] >= '0' && num[i] <= '9') {
+            digit_value = num[i] - '0';
+        } else {
+            digit_value = num[i] - 'A' + 10;
+        }
+
+        if (digit_value >= b) {
+            // Dígito inválido para a base fornecida.
+            // Você pode tratar o erro aqui (ex: retornar -1).
+            return -1; 
+        }
+
+        result += digit_value * power;
+        power *= b;
+    }
+    return result;
+}
+```
+### FIBONACCI
+Fibonacci iterativo (para n pequenos)
+```cpp
+long long fib_iterativo(int n) {
+    if (n <= 1) {
+        return n;
+    }
+    long long a = 0, b = 1, c;
+    for (int i = 2; i <= n; i++) {
+        c = a + b;
+        a = b;
+        b = c;
+    }
+    return b;
+}
+```
+Fibonacci com Exponenciação de Matriz (para n grandes como 10^18)
+```cpp
+#include <vector>
+
+// Fibonacci com Exponenciação de Matriz - O(log n)
+// Ideal para N grande e com resultado modular.
+
+// Define um tipo 'matrix' para facilitar a leitura do código.
+using matrix = std::vector<std::vector<long long>>;
+
+// Define o módulo para os cálculos. Mude se o problema pedir outro.
+const int MOD = 1e9 + 7;
+
+// Função para multiplicar duas matrizes 2x2 sob um módulo.
+matrix multiply(const matrix& A, const matrix& B) {
+    matrix C = {{0, 0}, {0, 0}};
+    for (int i = 0; i < 2; i++) {
+        for (int j = 0; j < 2; j++) {
+            for (int k = 0; k < 2; k++) {
+                C[i][j] = (C[i][j] + A[i][k] * B[k][j]) % MOD;
+            }
+        }
+    }
+    return C;
+}
+
+// Função para elevar uma matriz a uma potência (exponenciação rápida).
+matrix matrix_pow(matrix A, long long p) {
+    matrix res = {{1, 0}, {0, 1}}; // Matriz identidade
+
+    while (p > 0) {
+        if (p & 1) { // Se p for ímpar
+            res = multiply(res, A);
+        }
+        A = multiply(A, A);
+        p >>= 1; // p = p / 2
+    }
+    return res;
+}
+
+// Função principal para encontrar o N-ésimo número de Fibonacci.
+long long fib(long long n) {
+    if (n == 0) {
+        return 0;
+    }
+
+    // Matriz de transformação de Fibonacci.
+    matrix T = {{1, 1}, {1, 0}};
+    
+    // Calcula T^n. De acordo com a fórmula, o resultado F(n)
+    // estará na posição [0][1] da matriz resultante.
+    T = matrix_pow(T, n);
+    
+    return T[0][1];
+}
+
+/*
+// Exemplo de uso na main:
+int main() {
+    long long n;
+    std::cin >> n;
+    std::cout << fib(n) << std::endl;
+    return 0;
+}
+*/
 ```
 ### FAST POW
 Exponenciação Rápida (Binária)
@@ -662,3 +813,48 @@ vector<int> kmp(const string& t, const string& s) {
 }
 ```
 
+## Estrutura de Dados
+
+### Sliding Window Maximum (Janela Deslizante)
+```cpp
+#include <bits/stdc++.h>
+
+using namespace std;
+
+// Sliding Window Maximum - O(n)
+// Encontra o valor máximo em cada janela de tamanho 'k'.
+// Retorna um vetor contendo o máximo de cada janela.
+// O vetor de resultado terá `arr.size() - k + 1` elementos.
+
+vector<int> sliding_window_max(const vector<int>& arr, int k) {
+    int n = arr.size();
+    vector<int> result;
+    // O deque armazena pares {valor, índice} dos elementos da janela.
+    deque<pair<int, int>> dq;
+
+    for (int i = 0; i < n; ++i) {
+        // 1. Remove da frente o elemento que já saiu da janela.
+        // A janela atual tem os índices [i - k + 1, i].
+        if (!dq.empty() && dq.front().second <= i - k) {
+            dq.pop_front();
+        }
+
+        // 2. Remove da traseira os elementos menores ou iguais ao atual,
+        // pois eles nunca poderão ser o máximo enquanto o elemento atual
+        // estiver na janela.
+        while (!dq.empty() && dq.back().first <= arr[i]) {
+            dq.pop_back();
+        }
+
+        // 3. Adiciona o elemento atual {valor, índice} na traseira.
+        dq.push_back({arr[i], i});
+
+        // 4. Se a janela já está completa, o máximo é o da frente.
+        // A primeira janela completa termina no índice k-1.
+        if (i >= k - 1) {
+            result.push_back(dq.front().first);
+        }
+    }
+    return result;
+}
+```
