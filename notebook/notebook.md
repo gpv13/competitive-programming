@@ -813,7 +813,7 @@ vector<int> kmp(const string& t, const string& s) {
 }
 ```
 
-## Estrutura de Dados
+## Estruturas de Dados
 
 ### Sliding Window Maximum (Janela Deslizante)
 ```cpp
@@ -858,3 +858,4 @@ vector<int> sliding_window_max(const vector<int>& arr, int k) {
     return result;
 }
 ```
+
