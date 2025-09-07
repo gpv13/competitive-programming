@@ -331,6 +331,82 @@ void encontrar_sccs(const vector<vector<int>>& adj,
     }
 }
 ```
+### Algoritmo de Kruskal (Minimum Spanning Tree)
+A verificação de ciclos é feita de forma eficiente com uma estrutura Union-Find (DSU). A complexidade final do algoritmo é dominada pela ordenação das arestas: **O(E logE)**.
+```cpp
+#include <bits/stdc++.h>
+
+using namespace std;
+
+// Estrutura para representar uma aresta ponderada
+struct Aresta {
+    int u, v, peso;
+
+    // Operador para permitir a ordenação das arestas pelo peso
+    bool operator<(const Aresta& other) const {
+        return peso < other.peso;
+    }
+};
+
+// --- Estrutura Union-Find (DSU) ---
+vector<int> pai;
+vector<int> tamanho;
+
+// Encontra o representante do conjunto de 'i' com compressão de caminho
+int find(int i) {
+    if (pai[i] == i) {
+        return i;
+    }
+    return pai[i] = find(pai[i]);
+}
+
+// Une os conjuntos de 'a' e 'b' por tamanho
+void unite(int a, int b) {
+    a = find(a);
+    b = find(b);
+    if (a != b) {
+        if (tamanho[a] < tamanho[b]) {
+            swap(a, b);
+        }
+        pai[b] = a;
+        tamanho[a] += tamanho[b];
+    }
+}
+// --- Fim da Estrutura Union-Find ---
+
+
+// Função principal do Algoritmo de Kruskal
+long long kruskal(int n, vector<Aresta>& arestas) {
+    // Inicializa a estrutura Union-Find
+    pai.resize(n);
+    iota(pai.begin(), pai.end(), 0); // Preenche pai[i] = i
+    tamanho.assign(n, 1);
+
+    // 1. Ordena todas as arestas pelo peso
+    sort(arestas.begin(), arestas.end());
+
+    long long custo_total = 0;
+    vector<Aresta> mst_arestas;
+
+    // 2. Percorre as arestas ordenadas
+    for (const auto& aresta : arestas) {
+        // 3. Verifica se os vértices da aresta estão em componentes diferentes
+        if (find(aresta.u) != find(aresta.v)) {
+            // Se sim, a aresta não forma um ciclo
+            custo_total += aresta.peso;
+            mst_arestas.push_back(aresta);
+            unite(aresta.u, aresta.v);
+        }
+    }
+
+    // Opcional: Verificar se uma MST foi formada (todos os vértices conectados)
+    // if (mst_arestas.size() != n - 1) {
+    //     return -1; // Grafo não é conexo
+    // }
+
+    return custo_total;
+}
+```
 
 ## Matemática
 
@@ -577,12 +653,12 @@ struct point
 
     point(double x = 0, double y = 0): x(x), y(y) {}
 
-    point operator +(point q) { return point(x + q.x, y + q.y); }
+    point operator +(point q) { return point(x + q.x, y + q.y); } 
     point operator -(point q) { return point(x - q.x, y - q.y); }
     point operator *(double t) { return point(x * t, y * t); }
     point operator /(double t) { return point(x / t, y / t); }
-    double operator *(point q) { return x * q.x + y * q.y; }
-    double operator %(point q) { return x * q.y - y * q.x; }
+    double operator *(point q) { return x * q.x + y * q.y; } // produto escalar
+    double operator %(point q) { return x * q.y - y * q.x; } // produto vetorial
 
     int cmp(point q) const {
         if (int t = ::cmp(x, q.x)) return t;
@@ -605,7 +681,9 @@ struct point
 
 point point::pivot;
 
+// Retorna a magnitude (comprimento) de um vetor
 double abs(point p) { return hypot(p.x, p.y); }
+// Retorna o ângulo do vetor em radianos com o eixo X
 double arg(point p) { return atan2(p.y, p.x); }
 
 typedef vector<point> polygon;
@@ -614,7 +692,27 @@ typedef pair<point, double> circle;
 int ccw(point p, point q, point r)
 {
     return cmp((p - r) % (q - r));
+    // +1: q está à esquerda do segmento rp
+    // -1: q está à direita do segmento rp
+    // 0: Os três pontos são colineares (estão na mesma linha).
 }
+```
+### Ângulo Entre Dois Vetores / Segmentos
+```cpp
+// Pré-requisito: Template Básico de Geometria 2D
+
+// Calcula o ângulo PQR (com vértice em Q) em radianos.
+double angulo(point p, point q, point r) {
+    // Cria os vetores a partir do vértice Q
+    point u = p - q; // Vetor QP
+    point v = r - q; // Vetor QR
+
+    // Usa os operadores sobrecarregados:
+    // u % v -> produto vetorial (cross product)
+    // u * v -> produto escalar (dot product)
+    return atan2(u % v, u * v);
+}
+// para graus: double graus = angulo_radianos * 180.0 / PI;
 ```
 ### Template Básico para Geometria 2D (Gemini)
 Este template define uma estrutura point para representar pontos ou vetores em um plano 2D e inclui as operações geométricas mais comuns. A precisão de ponto flutuante é tratada com uma constante EPS.
@@ -858,4 +956,5 @@ vector<int> sliding_window_max(const vector<int>& arr, int k) {
     return result;
 }
 ```
+
 
