@@ -96,7 +96,7 @@ void dfs(int u) {
     }
 }
 ```
-### UNION FIND
+### UNION FIND (MUDAR DPS PRA LIMPAR CADA ITERAÇÃO)
 ```cpp
 #include <bits/stdc++.h>
 
@@ -956,5 +956,6 @@ vector<int> sliding_window_max(const vector<int>& arr, int k) {
     return result;
 }
 ```
+
 
 
