@@ -814,8 +814,9 @@ O hashing polinomial é uma técnica poderosa para converter strings em números
 // String Hashing - O(n)
 // Calcula o hash de uma string inteira
 long long compute_hash(const string& s) {
-    const int p = 31; // Número primo, aprox. o tamanho do alfabeto
+    const int p = 5647; // Número primo, aprox. o tamanho do alfabeto
     const int m = 1e9 + 9; // Módulo grande
+    //outro modulo possivel: 1e9 + 7, outra base possivel: 4079
     long long hash_value = 0;
     long long p_pow = 1;
     for (char c : s) {
@@ -956,6 +957,7 @@ vector<int> sliding_window_max(const vector<int>& arr, int k) {
     return result;
 }
 ```
+
 
 
 
