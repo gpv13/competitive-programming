@@ -9,7 +9,14 @@
 
 ---
 
-## Tabela ASCII (32–126)
+## Utilidades
+
+### Header
+```cpp
+ios::sync_with_stdio(false);
+cin.tie(nullptr);
+```
+### Tabela ASCII (32–126)
 ```
 Dec Hex Char | Dec Hex Char | Dec Hex Char | Dec Hex Char
 -----------------+-------------------+-------------------+----------------
@@ -47,6 +54,7 @@ Dec Hex Char | Dec Hex Char | Dec Hex Char | Dec Hex Char
 110 6E n | | |
 111 6F o | | |
 ```
+
 ## Grafos
 
 ### BFS
@@ -957,6 +965,7 @@ vector<int> sliding_window_max(const vector<int>& arr, int k) {
     return result;
 }
 ```
+
 
 
 
