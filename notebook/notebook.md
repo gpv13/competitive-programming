@@ -167,7 +167,7 @@ int main() {
 Menor caminho com pesos positivos em **O((V+E) log V)**.
 ```cpp
 // DIJKSTRA - O((V + E) log V)
-// A lista de adjacência 'adj' deve armazenar pares {peso, vertice}.
+// A lista de adjacência 'adj' deve armazenar pares {vertice, peso}.
 vector<int> dijkstra(int s, int n, const vector<vector<pair<int, int>>>& adj) {
     const int INF = 1e9; // Usar um valor grande como infinito
     vector<int> dist(n, INF);
@@ -184,7 +184,7 @@ vector<int> dijkstra(int s, int n, const vector<vector<pair<int, int>>>& adj) {
             continue; // Já encontramos um caminho mais curto para 'u'
         }
 
-        for (auto [w, v] : adj[u]) { // Para cada vizinho 'v' de 'u' com peso 'w'
+        for (auto [v, w] : adj[u]) { // Para cada vizinho 'v' de 'u' com peso 'w'
             if (dist[u] + w < dist[v]) {
                 dist[v] = dist[u] + w;
                 pq.push({dist[v], v});
@@ -1211,6 +1211,7 @@ vector<int> sliding_window_max(const vector<int>& arr, int k) {
     return result;
 }
 ```
+
 
 
 
