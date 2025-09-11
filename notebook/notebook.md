@@ -194,6 +194,167 @@ vector<int> dijkstra(int s, int n, const vector<vector<pair<int, int>>>& adj) {
     return dist;
 }
 ```
+### Algoritmo de Floyd-Warshall (All-Pairs Shortest Path)
+Encontra o caminho mais curto entre todos os pares de vértices em um grafo ponderado, usando programação dinâmica. A complexidade é **O(V^3)**, o que o torna ideal para grafos pequenos.
+```cpp
+#include <bits/stdc++.h>
+
+using namespace std;
+
+// Defina o número máximo de vértices que o problema pode ter.
+const int MAXN = 101; 
+// Use um valor grande para infinito, mas que evite overflow na soma.
+const long long INF = 1e18; 
+
+int n; // Número de vértices
+long long dist[MAXN][MAXN];
+
+// Função para inicializar a matriz de adjacência/distâncias
+void inicializar_matriz() {
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            if (i == j) {
+                dist[i][j] = 0;
+            } else {
+                dist[i][j] = INF;
+            }
+        }
+    }
+}
+
+// Algoritmo de Floyd-Warshall
+void floyd_warshall() {
+    // Itera por cada vértice 'k' como um possível intermediário
+    for (int k = 0; k < n; k++) {
+        // Itera por todas as origens 'i'
+        for (int i = 0; i < n; i++) {
+            // Itera por todos os destinos 'j'
+            for (int j = 0; j < n; j++) {
+                // Se k é um intermediário válido (caminhos não infinitos)
+                if (dist[i][k] != INF && dist[k][j] != INF) {
+                    // Atualiza a distância se o caminho via 'k' for mais curto
+                    dist[i][j] = min(dist[i][j], dist[i][k] + dist[k][j]);
+                }
+            }
+        }
+    }
+}
+
+// Exemplo de uso
+int main() {
+    // Leitura do número de vértices (n) e arestas (m)
+    int m;
+    cin >> n >> m;
+
+    inicializar_matriz();
+
+    // Leitura das arestas
+    for (int i = 0; i < m; i++) {
+        int u, v;
+        long long peso;
+        cin >> u >> v >> peso;
+        // Para grafos com arestas múltiplas, é comum pegar a de menor peso
+        dist[u][v] = min(dist[u][v], peso);
+        // Se o grafo for não-direcionado, adicione a aresta de volta
+        // dist[v][u] = min(dist[v][u], peso);
+    }
+
+    // Roda o algoritmo
+    floyd_warshall();
+
+    // Agora, dist[i][j] contém a menor distância entre os vértices i e j.
+    int origem = 0, destino = n - 1;
+    if (dist[origem][destino] == INF) {
+        cout << "Nao ha caminho entre " << origem << " e " << destino << endl;
+    } else {
+        cout << "A menor distancia entre " << origem << " e " << destino << " eh: " << dist[origem][destino] << endl;
+    }
+    
+    // Detecção de ciclo negativo: após rodar o algoritmo, se dist[i][i] < 0
+    // para qualquer 'i', então existe um ciclo negativo alcançável a partir de 'i'.
+
+    return 0;
+}
+```
+### Algoritmo de Bellman-Ford (Shortest Path com Pesos Negativos)
+Calcula o caminho mais curto de uma única origem (source) para todos os outros vértices em um grafo ponderado. É a principal alternativa ao Dijkstra quando o grafo pode conter arestas com pesos negativos. Sua complexidade é **O(V*E)**, onde V é o número de vértices e E o de arestas.
+```cpp
+#include <bits/stdc++.h>
+
+using namespace std;
+
+// Defina o número máximo de vértices e um valor seguro para infinito.
+const int MAXN = 101;
+const long long INF = 1e18;
+
+// Estrutura para representar as arestas do grafo.
+// Para o Bellman-Ford, uma lista de arestas é a forma mais fácil de trabalhar.
+struct Aresta {
+    int u, v; // Vértices de origem e destino
+    long long peso;
+};
+
+int n; // Número de vértices
+vector<long long> dist(MAXN, INF);
+
+// Algoritmo de Bellman-Ford
+// Parâmetros: s (origem), arestas (vetor com todas as arestas do grafo)
+// Retorna: true se NÃO houver ciclo negativo, false se houver.
+// O vetor 'dist' é preenchido com as menores distâncias.
+bool bellman_ford(int s, const vector<Aresta>& arestas) {
+    // 1. Inicializa as distâncias
+    dist.assign(n, INF);
+    dist[s] = 0;
+
+    // 2. Relaxa todas as arestas V-1 vezes
+    for (int i = 0; i < n - 1; ++i) {
+        for (const auto& aresta : arestas) {
+            if (dist[aresta.u] != INF && dist[aresta.u] + aresta.peso < dist[aresta.v]) {
+                dist[aresta.v] = dist[aresta.u] + aresta.peso;
+            }
+        }
+    }
+
+    // 3. V-ésima iteração para detectar ciclos de peso negativo
+    for (const auto& aresta : arestas) {
+        if (dist[aresta.u] != INF && dist[aresta.u] + aresta.peso < dist[aresta.v]) {
+            // Se uma distância puder ser melhorada, há um ciclo negativo.
+            return false;
+        }
+    }
+
+    return true; // Nenhum ciclo negativo encontrado
+}
+
+// Exemplo de uso
+int main() {
+    int m; // Número de arestas
+    cin >> n >> m;
+
+    vector<Aresta> arestas(m);
+    for (int i = 0; i < m; ++i) {
+        cin >> arestas[i].u >> arestas[i].v >> arestas[i].peso;
+    }
+
+    int origem = 0;
+    bool sem_ciclo_negativo = bellman_ford(origem, arestas);
+
+    if (!sem_ciclo_negativo) {
+        cout << "O grafo contem um ciclo de peso negativo!" << endl;
+    } else {
+        cout << "Distancias a partir da origem " << origem << ":" << endl;
+        for (int i = 0; i < n; ++i) {
+            if (dist[i] == INF) {
+                cout << "Vertice " << i << ": Nao alcancavel" << endl;
+            } else {
+                cout << "Vertice " << i << ": " << dist[i] << endl;
+            }
+        }
+    }
+
+    return 0;
+}
+```
 ### EDMONDS-KARP
 Calcula o fluxo máximo em um grafo. A complexidade é **O(V * E²)**.
 ```cpp
@@ -1050,6 +1211,7 @@ vector<int> sliding_window_max(const vector<int>& arr, int k) {
     return result;
 }
 ```
+
 
 
 
