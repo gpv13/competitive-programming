@@ -56,7 +56,77 @@ Dec Hex Char | Dec Hex Char | Dec Hex Char | Dec Hex Char
 111 6F o | | |
 ```
 ### Fórmulas Úteis
+---
 
+#### Combinatória
+
+A área de "contagem" é uma das mais importantes em programação competitiva.
+
+* **Permutações:** O número de maneiras de ordenar `n` itens distintos.
+    $$P(n) = n!$$
+
+* **Arranjos (Permutações Parciais):** O número de maneiras de escolher e ordenar `k` itens de um total de `n`.
+    $$A(n, k) = \frac{n!}{(n-k)!}$$
+
+* **Combinações:** O número de maneiras de escolher `k` itens de um total de `n`, sem se importar com a ordem. É a fórmula mais comum de todas.
+    $$C(n, k) = \binom{n}{k} = \frac{n!}{k!(n-k)!}$$
+    * **Relação de Stifel (para DP/Triângulo de Pascal):** Útil para calcular combinações em DPs.
+        $$\binom{n}{k} = \binom{n-1}{k} + \binom{n-1}{k-1}$$
+
+* **Números de Catalan:** Aparecem em problemas de contagem envolvendo estruturas com restrições recursivas (ex: parênteses balanceados, triangulações de polígonos, árvores binárias).
+    $$C_n = \frac{1}{n+1}\binom{2n}{n}$$
+
+* **Bolas e Barras (Stars and Bars):** Usado para encontrar o número de soluções inteiras não-negativas para uma equação.
+    * Para a equação $x_1 + x_2 + \dots + x_k = n$:
+        $$\binom{n+k-1}{k-1}$$
+
+---
+#### Teoria dos Números
+
+Essenciais para problemas envolvendo divisibilidade, primos e aritmética modular.
+
+* **Relação entre MDC e MMC:**
+    $$a \cdot b = \text{mdc}(a, b) \cdot \text{mmc}(a, b)$$
+
+* **Inverso Modular (usando o Pequeno Teorema de Fermat):** Usado para calcular $(a / b) \pmod{m}$ quando `m` é um número primo. A divisão vira uma multiplicação pelo inverso modular.
+    * Se $m$ é primo, o inverso de $a$ é $a^{-1} \equiv a^{m-2} \pmod{m}$.
+    * Isso pode ser calculado com a sua função de exponenciação rápida: `binpow(a, m-2, m)`.
+
+* **Função Totiente de Euler ($\phi(n)$):** Conta a quantidade de números inteiros positivos até `n` que são coprimos com `n`.
+    * Se a fatoração em primos de $n$ é $p_1^{k_1} \cdot p_2^{k_2} \cdot \dots$, então:
+        $$\phi(n) = n \cdot \left(1 - \frac{1}{p_1}\right) \cdot \left(1 - \frac{1}{p_2}\right) \cdot \dots$$
+
+---
+#### Somas Notáveis
+
+* **Soma de elementos em uma PA.**
+
+$S_n = E1 + E{n-1} \cdot \dfrac{n}{2}$
+
+* **Soma de elementos em uma PG.**
+
+$Sn = a_1 \cdot \dfrac{(q^n - 1)}{q - 1}$
+
+Além de PA e PG, estas são muito úteis.
+
+* **Soma dos `n` primeiros quadrados:**
+    $$\sum_{i=1}^{n} i^2 = \frac{n(n+1)(2n+1)}{6}$$
+
+* **Soma dos `n` primeiros cubos:**
+    $$\sum_{i=1}^{n} i^3 = \left(\frac{n(n+1)}{2}\right)^2$$
+
+---
+#### Geometria Computacional
+
+Fórmulas básicas para problemas de geometria.
+
+* **Distância Euclidiana entre dois pontos $(x_1, y_1)$ e $(x_2, y_2)$:**
+    $$d = \sqrt{(x_2-x_1)^2 + (y_2-y_1)^2}$$
+
+* **Fórmula de Herão:** Calcula a área de um triângulo a partir do comprimento de seus três lados (`a`, `b`, `c`).
+    $$\text{Área} = \sqrt{s(s-a)(s-b)(s-c)}$$
+    (Onde $s = \frac{a+b+c}{2}$ é o semiperímetro)
+  
 ## Grafos
 
 ### BFS
@@ -1363,6 +1433,7 @@ vector<int> sliding_window_max(const vector<int>& arr, int k) {
 ## Programação Dinâmica
 
 ### Ouaaa cade as DP?
+
 
 
 
