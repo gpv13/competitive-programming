@@ -55,7 +55,7 @@ Dec Hex Char | Dec Hex Char | Dec Hex Char | Dec Hex Char
 110 6E n | | |
 111 6F o | | |
 ```
-### Fómulas Úteis
+### Fórmulas Úteis
 
 ## Grafos
 
@@ -1217,6 +1217,7 @@ vector<int> sliding_window_max(const vector<int>& arr, int k) {
 ## Programação Dinâmica
 
 ### Ouaaa cade as DP?
+
 
 
 
