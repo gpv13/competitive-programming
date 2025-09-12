@@ -2129,7 +2129,42 @@ int main()
     return 0;
 }
 ```   
+### Problema das Atividades (Vacation Problem)
+Este é um problema de DP onde o objetivo é maximizar uma pontuação ao longo de vários estágios (dias), com uma restrição sobre as escolhas em estágios consecutivos.
 
+Descrição do Problema:
+Imagine que você tem N dias de férias. Em cada dia i, você pode escolher uma de três atividades (A, B ou C), e cada uma lhe dá uma certa quantidade de "pontos de felicidade" (a[i], b[i], c[i]). A única regra é que você não pode escolher a mesma atividade em dois dias seguidos. O objetivo é escolher uma sequência de atividades que maximize a sua felicidade total.
+```cpp
+#include<bits/stdc++.h>
+using namespace std;
+
+int main(){
+
+    int dp[100001][3];
+    int n;
+    cin >> n;
+    vector<int> a, b, c;
+    for(int i=0;i<n;i++){
+        int auxa, auxb, auxc;
+        cin >> auxa >> auxb >> auxc;
+        a.push_back(auxa);
+        b.push_back(auxb);
+        c.push_back(auxc);
+    }
+    dp[0][0] = a[0]; 
+    dp[0][1] = b[0]; 
+    dp[0][2] = c[0]; 
+    for(int i=1;i<n;i++){
+        dp[i][0] = max(dp[i-1][1] , dp[i-1][2]) + a[i]; // Para fazer a atividade 'a' hoje, ontem tivemos que fazer 'b' ou 'c'
+        dp[i][1] = max(dp[i-1][0] , dp[i-1][2]) + b[i]; // Para fazer a atividade 'b' hoje, ontem tivemos que fazer 'a' ou 'c'
+        dp[i][2] = max(dp[i-1][1] , dp[i-1][0]) + c[i]; // Para fazer a atividade 'c' hoje, ontem tivemos que fazer 'a' ou 'b'
+    }
+    cout << max(max(dp[n-1][0], dp[n-1][1]), dp[n-1][2]);
+
+
+    return 0;
+}
+```
 
 
 
