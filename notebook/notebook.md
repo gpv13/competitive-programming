@@ -6,6 +6,7 @@
 - [Geometria 2D](#geometria-2d)
 - [Strings](#strings)
 - [Estruturas de Dados](#estruturas-de-dados)
+- [Programação Dinâmica](#programação-dinâmica)
 
 ---
 
@@ -54,6 +55,7 @@ Dec Hex Char | Dec Hex Char | Dec Hex Char | Dec Hex Char
 110 6E n | | |
 111 6F o | | |
 ```
+### Fómulas Úteis
 
 ## Grafos
 
@@ -1211,6 +1213,11 @@ vector<int> sliding_window_max(const vector<int>& arr, int k) {
     return result;
 }
 ```
+
+## Programação Dinâmica
+
+### Ouaaa cade as DP?
+
 
 
 
