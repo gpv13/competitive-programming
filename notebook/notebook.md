@@ -1274,8 +1274,13 @@ double arg(point p) { return atan2(p.y, p.x); } // Ângulo em radianos
 
 // --- Funções Geométricas Primitivas ---
 
-// Testa a orientação de 3 pontos (sentido anti-horário)
-// Retorna: +1 (esquerda), -1 (direita), 0 (colinear)
+// Testa a orientação de 3 pontos.
+// Pense em uma caminhada do ponto 'p' para o ponto 'q'. A função
+// determina de que lado o ponto 'r' está em relação a essa trajetória.
+// Retorna:
+//   +1: 'r' está à esquerda da linha orientada p->q (curva anti-horária)
+//   -1: 'r' está à direita da linha orientada p->q (curva horária)
+//    0: 'r', 'p' e 'q' são colineares (estão na mesma linha)
 int ccw(point p, point q, point r) {
     return cmp((q - p) % (r - p));
 }
@@ -1387,6 +1392,81 @@ double angulo(point p, point q, point r) {
     return atan2(u % v, u * v);
 }
 // para graus: double graus = angulo_radianos * 180.0 / PI;
+```
+### Fecho Convexo (Convex Hull) - Algoritmo de Graham Scan
+O fecho convexo de um conjunto de pontos é o menor polígono convexo que contém todos os pontos. Imagine esticar um elástico em volta de todos os pontos; a forma que o elástico assume é o fecho convexo.
+O algoritmo de Graham Scan resolve o problema com os seguintes passos:
+Encontrar um Pivô: Escolhe-se o ponto com o menor y (e menor x como critério de desempate). Este ponto tem a garantia de fazer parte do fecho.
+Ordenar por Ângulo: Os outros pontos são ordenados pelo ângulo polar que formam com o pivô, em sentido anti-horário.
+Construir o Fecho: Os pontos ordenados são percorridos um a um. Usando uma estrutura de pilha, adicionamos pontos ao fecho, garantindo que a sequência de vértices sempre forme "curvas à esquerda" (sentido anti-horário). Se ao adicionar um novo ponto, a curva se torna "reta" ou "à direita", o ponto anterior é removido da pilha.
+A complexidade é dominada pela ordenação, sendo **O(NlogN)**.
+```cpp
+// Pré-requisito: Template Básico de Geometria 2D com a struct 'point' e 'ccw'.
+// A struct 'point' precisa ter o membro estático 'pivot'.
+
+// --- Fecho Convexo (Convex Hull) ---
+
+// Função de comparação para a Ordenação Polar em sentido anti-horário.
+// Usa o 'point::pivot' global que deve ser definido antes de chamar std::sort.
+bool cmp_polar(point a, point b) {
+    // Usa ccw para determinar a ordem angular em relação ao pivô
+    int order = ccw(point::pivot, a, b);
+    if (order == 0) { // Se forem colineares com o pivô...
+        // ...o ponto mais próximo do pivô vem primeiro.
+        return cmp(abs(a - point::pivot), abs(b - point::pivot)) < 0;
+    }
+    // Caso contrário, a ordem é definida pelo sentido anti-horário.
+    return order > 0;
+}
+
+// Algoritmo de Graham Scan para encontrar o Fecho Convexo.
+// Modifica o vetor 'pts' para conter apenas os pontos do fecho em ordem anti-horária.
+void fecho_convexo(vector<point>& pts, bool include_collinear = false) {
+    if (pts.size() <= 2) {
+        return;
+    }
+
+    // 1. Encontrar o pivô (ponto mais baixo e à esquerda) e colocá-lo no início.
+    int pivot_idx = 0;
+    for (int i = 1; i < pts.size(); i++) {
+        if (cmp(pts[i].y, pts[pivot_idx].y) < 0 || 
+           (cmp(pts[i].y, pts[pivot_idx].y) == 0 && cmp(pts[i].x, pts[pivot_idx].x) < 0)) {
+            pivot_idx = i;
+        }
+    }
+    swap(pts[0], pts[pivot_idx]);
+    point::pivot = pts[0];
+
+    // 2. Ordenar os pontos restantes pelo ângulo polar.
+    sort(pts.begin() + 1, pts.end(), cmp_polar);
+    
+    // Opcional: Tratar pontos colineares no último segmento do fecho.
+    // O sort já ordena os pontos colineares pela distância. Para o fecho, queremos o
+    // mais distante por último, então revertemos o bloco final de pontos colineares.
+    if (include_collinear) {
+        int i = (int)pts.size() - 1;
+        while (i > 0 && ccw(point::pivot, pts[i], pts.back()) == 0) i--;
+        reverse(pts.begin() + i + 1, pts.end());
+    }
+
+    // 3. Construir o fecho.
+    vector<point> hull;
+    for (const auto& p : pts) {
+        // Remove pontos da pilha enquanto a adição de 'p' não formar uma "curva à esquerda".
+        // Uma curva à direita (ccw < 0) ou uma linha reta (ccw == 0) indica que o
+        // ponto anterior se tornou interno ao novo fecho.
+        while (hull.size() > 1) {
+            int decision = ccw(hull[hull.size() - 2], hull.back(), p);
+            if (decision < 0 || (decision == 0 && !include_collinear)) {
+                hull.pop_back();
+            } else {
+                break;
+            }
+        }
+        hull.push_back(p);
+    }
+    pts = hull;
+}
 ```
 ### Template Básico para Geometria 2D (Gemini)
 Este template define uma estrutura point para representar pontos ou vetores em um plano 2D e inclui as operações geométricas mais comuns. A precisão de ponto flutuante é tratada com uma constante EPS.
@@ -1811,6 +1891,7 @@ int main() {
 }
 */
 ```
+
 
 
 
