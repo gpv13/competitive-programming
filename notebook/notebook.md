@@ -1311,6 +1311,34 @@ double dist_point_segment(point p, point a, point b) {
     return fabs((b - a) % (p - a)) / abs(b - a);
 }
 
+// --- Funções para Polígonos ---
+// Verifica se um ponto está dentro, na borda ou fora de um polígono.
+// Retorna: 2 se DENTRO, 1 se NA BORDA, 0 se FORA.
+int ponto_em_poligono(const polygon& poly, point p) {
+    if (poly.size() < 3) return 0; // Não é um polígono válido
+
+    double total_angle = 0;
+    int n = poly.size();
+
+    for (int i = 0; i < n; i++) {
+        point p1 = poly[i];
+        point p2 = poly[(i + 1) % n];
+
+        // Primeiro, verifica se o ponto está sobre a aresta atual
+        if (ccw(p1, p2, p) == 0 && on_segment(p, p1, p2)) {
+            return 1; // NA BORDA
+        }
+
+        // Soma o ângulo sinalizado formado por p e a aresta p1-p2
+        total_angle += atan2((p1 - p) % (p2 - p), (p1 - p) * (p2 - p));
+    }
+
+    // Compara o valor absoluto do ângulo total com PI.
+    // Se for próximo de 2*PI, está dentro. Se for próximo de 0, está fora.
+    // cmp(abs(total_angle), PI) > 0 verifica se |total_angle| > PI.
+    return cmp(abs(total_angle), PI) > 0 ? 2 : 0;
+}
+
 // --- Estrutura para Retas (ax + by + c = 0) ---
 
 struct Reta {
@@ -1891,6 +1919,7 @@ int main() {
 }
 */
 ```
+
 
 
 
