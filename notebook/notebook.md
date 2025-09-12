@@ -1634,9 +1634,183 @@ vector<int> sliding_window_max(const vector<int>& arr, int k) {
 
 ## Programação Dinâmica
 
-### Ouaaa cade as DP?
+### Problema da Mochila (Knapsack Problem)
+Um problema clássico de otimização. Dado um conjunto de itens, cada um com um peso e um valor, o objetivo é determinar o número de cada item a incluir em uma coleção de modo que o peso total seja menor ou igual a uma dada capacidade (W) e o valor total seja o maior possível. A complexidade padrão das soluções com DP é O(N * W), onde N é o número de itens e W a capacidade da mochila.
+
+1. Mochila 0/1 (0/1 Knapsack)
+Nesta variação, cada item pode ser escolhido no máximo uma vez.
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+const int MAXN = 1001; // Máximo de itens
+const int MAXW = 1001; // Capacidade máxima
+
+int peso[MAXN], valor[MAXN];
+int dp[MAXN][MAXW]; // Matriz de memoização
+
+// Calcula o valor máximo para a Mochila 0/1
+int knapsack_01_matriz(int W, int n) {
+    // dp[i][w] = valor máximo usando os primeiros 'i' itens com capacidade 'w'
+    for (int i = 1; i <= n; ++i) {
+        for (int w = 0; w <= W; ++w) {
+            // Se o item atual não cabe na mochila, a única opção é não pegá-lo.
+            if (peso[i-1] > w) {
+                dp[i][w] = dp[i-1][w];
+            } else {
+                // Se o item cabe, temos duas opções:
+                // 1. Não pegar o item: o valor é o mesmo de antes (dp[i-1][w])
+                // 2. Pegar o item: o valor é dp[i-1][w-peso[i-1]] + valor[i-1]
+                // Escolhemos a opção que der o maior valor.
+                dp[i][w] = max(dp[i-1][w], dp[i-1][w - peso[i-1]] + valor[i-1]);
+            }
+        }
+    }
+    return dp[n][W];
+}
+
+// Reconstrói quais itens foram escolhidos a partir da matriz DP
+vector<int> reconstruir_itens(int W, int n) {
+    vector<int> itens_escolhidos;
+    int w_atual = W;
+    for (int i = n; i > 0 && w_atual > 0; --i) {
+        // Compara o resultado atual com o da linha anterior.
+        // Se for diferente, significa que o item 'i' foi essencial para
+        // alcançar o valor em dp[i][w_atual], então ele foi escolhido.
+        if (dp[i][w_atual] != dp[i-1][w_atual]) {
+            itens_escolhidos.push_back(i - 1); // Adiciona o índice do item
+            w_atual -= peso[i-1];
+        }
+    }
+    return itens_escolhidos;
+}
+```
+2. Mochila Irrestrita (Unbounded Knapsack)
+Nesta variação, cada item pode ser escolhido quantas vezes quisermos. O código abaixo calcula o valor máximo e também permite reconstruir a solução (quais e quantos itens foram usados).
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+// --- Constantes e Globais ---
+const int MAXN = 1001; // Máximo de itens
+const int MAXW = 1001; // Capacidade máxima
+
+int peso[MAXN], valor[MAXN];
+
+// Vetor auxiliar para guardar qual item foi escolhido para cada capacidade.
+// É preenchido pela função principal e usado pela função de reconstrução.
+vector<int> item_escolhido;
 
 
+// --- Funções ---
+
+// Calcula o valor máximo para a Mochila Irrestrita e prepara a reconstrução.
+int knapsack_irrestrito(int W, int n) {
+    vector<int> dp(W + 1, 0);
+    item_escolhido.assign(W + 1, -1);
+
+    for (int w = 1; w <= W; w++) {
+        for (int i = 0; i < n; i++) {
+            if (peso[i] <= w) {
+                if (dp[w] < dp[w - peso[i]] + valor[i]) {
+                    dp[w] = dp[w - peso[i]] + valor[i];
+                    item_escolhido[w] = i; // Guarda a melhor escolha para a capacidade 'w'
+                }
+            }
+        }
+    }
+    return dp[W];
+}
+
+// Reconstrói os itens usados a partir do vetor 'item_escolhido'.
+// Retorna um map onde a chave é o índice do item e o valor é a quantidade.
+map<int, int> reconstruir_itens_irrestrito(int W) {
+    map<int, int> itens;
+    int w_atual = W;
+
+    // Volta do final, pegando a melhor escolha para cada capacidade
+    while (w_atual > 0 && item_escolhido[w_atual] != -1) {
+        int item_idx = item_escolhido[w_atual];
+        itens[item_idx]++;
+        w_atual -= peso[item_idx];
+    }
+    return itens;
+}
+
+/*
+// --- Exemplo de como usar na main ---
+int main() {
+    int n, W;
+    // ... ler n, W, e os vetores peso[] e valor[] ...
+    
+    // 1. Calcula o valor máximo e preenche o vetor 'item_escolhido'
+    int max_valor = knapsack_irrestrito(W, n);
+    
+    // 2. Usa o vetor preenchido para descobrir os itens
+    map<int, int> itens_usados = reconstruir_itens_irrestrito(W);
+    
+    cout << "Valor maximo: " << max_valor << endl;
+    cout << "Itens usados (indice -> quantidade):" << endl;
+    for (auto const& [item, qtd] : itens_usados) {
+        cout << item << " -> " << qtd << endl;
+    }
+    return 0;
+}
+*/
+```
+### Problema do Troco (Coin Change)
+Dado um conjunto de moedas de diferentes valores e uma quantia total X, o objetivo é encontrar o número mínimo de moedas necessárias para formar exatamente a quantia X.
+A solução padrão usa Programação Dinâmica com a abordagem Bottom-Up (Tabulação), construindo a solução de forma iterativa. Assume-se que há uma quantidade infinita de cada tipo de moeda. A complexidade é O(N * X), onde N é o número de tipos de moeda e X é a quantia final.
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+const int MAXX = 10001; // Quantia máxima
+const int INF = 1e9;
+
+// Vetor com os valores das moedas
+vector<int> coins;
+
+// Calcula o troco para 'x' de forma iterativa (Bottom-Up)
+int solve_troco(int x) {
+    // value[i] = o número mínimo de moedas para formar a quantia i
+    vector<int> value(x + 1, INF);
+    
+    // Caso base: 0 moedas para formar a quantia 0
+    value[0] = 0;
+
+    // Constrói a solução para cada quantia de 1 até x
+    for (int i = 1; i <= x; i++) {
+        // Tenta usar cada moeda para otimizar o resultado para a quantia 'i'
+        for (int c : coins) {
+            if (i - c >= 0 && value[i - c] != INF) {
+                // A solução para 'i' é o mínimo entre o valor atual e
+                // (1 + a solução para o troco restante 'i-c')
+                value[i] = min(value[i], value[i - c] + 1);
+            }
+        }
+    }
+
+    // Se o valor continuar INF, não é possível formar o troco.
+    // Pode retornar -1 ou o próprio INF, dependendo do problema.
+    return value[x] == INF ? -1 : value[x];
+}
+
+/*
+// Exemplo de uso:
+int main() {
+    coins = {1, 3, 4};
+    int x = 10;
+    int resultado = solve_troco(x);
+    if (resultado != -1) {
+        cout << "Minimo de moedas para " << x << ": " << resultado << endl; // Saída: 3 (4+3+3)
+    } else {
+        cout << "Nao eh possivel formar o troco para " << x << endl;
+    }
+    return 0;
+}
+*/
+```
 
 
 
