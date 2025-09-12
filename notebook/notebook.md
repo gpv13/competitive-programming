@@ -101,7 +101,7 @@ Essenciais para problemas envolvendo divisibilidade, primos e aritmética modula
 
 * **Soma de elementos em uma PA.**
 
-$S_n = E1 + E{n-1} \cdot \dfrac{n}{2}$
+$S_n = (E_1 + E_{(n-1)}) \cdot \dfrac{n}{2}$
 
 * **Soma de elementos em uma PG.**
 
@@ -1433,6 +1433,7 @@ vector<int> sliding_window_max(const vector<int>& arr, int k) {
 ## Programação Dinâmica
 
 ### Ouaaa cade as DP?
+
 
 
 
