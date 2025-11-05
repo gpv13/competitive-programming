@@ -755,6 +755,14 @@ int lmc(int m, int n){
     return (m * n) / gcd(m, n);
 }
 ```
+### Inverso Modular
+Inverso modular para quando o modulo é primo
+```cpp
+int mod_inv(int a, int m) {
+    if (a <= 1) return a;
+    return m - (long long)(m / a) * mod_inv(m % a, m) % m;
+}
+```
 ### Conversão de Bases Numéricas
 #### De Decimal (Base 10) para Base B
 Usa o método de divisões sucessivas. O resultado é uma string, pois pode conter caracteres (ex: 'A', 'F' para hexadecimal).
@@ -2298,6 +2306,7 @@ int lis_nlogn(const vector<int>& arr) {
     return tails.size();
 }
 ```
+
 
 
 
