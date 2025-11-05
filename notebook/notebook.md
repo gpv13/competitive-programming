@@ -756,7 +756,7 @@ int lmc(int m, int n){
 }
 ```
 ### Inverso Modular
-Inverso modular para quando o modulo é primo
+Inverso modular para quando o a e m são coprimos
 ```cpp
 int mod_inv(int a, int m) {
     if (a <= 1) return a;
@@ -2306,6 +2306,7 @@ int lis_nlogn(const vector<int>& arr) {
     return tails.size();
 }
 ```
+
 
 
 
