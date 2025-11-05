@@ -1223,92 +1223,199 @@ vector<double> solve_system(matrix mat) {
 
 ## Geometria 2D
 
-### Template Básico para Geometria 2D
-Este template define uma estrutura point para representar pontos ou vetores em um plano 2D e inclui as operações geométricas mais comuns. A precisão de ponto flutuante é tratada com uma constante EPS.
+### Template Básico para Geometria 2D (Gemini)
 ```cpp
 #include <bits/stdc++.h>
 #define REP(i,n) for(int i=0;i<(int)n;++i)
 #define EACH(i,c) for(__typeof((c).begin()) i=(c).begin(); i!=(c).end(); ++i)
 #define ALL(c) (c).begin(), (c).end()
-#define SIZE(x) (int((x).size()))
-#define MAXSZ 1000
 
 using namespace std;
 
-const int INF = 0x3F3F3F3F;
 const double PI = 2*acos(0);
 const double EPS = 1e-10;
 
-/*
- * Função de Comparação de 2 valores
- *
- * Parametros:
- * double x;
- * double y;
- *
- * Retorna:
- * -1 se x < y
- * 0 se x == y
- * 1 se x > y
- */
-inline int cmp(double x, double y=0, double tol=EPS)
-{
-    return (x<=y+tol) ? (x+tol<y) ? -1 : 0 : 1;
+// --- Estruturas e Primitivas Base ---
+
+// Função de Comparação segura para doubles
+inline int cmp(double x, double y = 0, double tol = EPS) {
+    return (x <= y + tol) ? (x + tol < y) ? -1 : 0 : 1;
 }
 
-/* Estrutura de dados para pontos */
-
-struct point
-{
+// Estrutura de dados para Ponto ou Vetor
+struct point {
     double x, y;
-
     point(double x = 0, double y = 0): x(x), y(y) {}
 
-    point operator +(point q) { return point(x + q.x, y + q.y); } 
-    point operator -(point q) { return point(x - q.x, y - q.y); }
-    point operator *(double t) { return point(x * t, y * t); }
-    point operator /(double t) { return point(x / t, y / t); }
-    double operator *(point q) { return x * q.x + y * q.y; } // produto escalar
-    double operator %(point q) { return x * q.y - y * q.x; } // produto vetorial
+    point operator+(point q) const { return point(x + q.x, y + q.y); }
+    point operator-(point q) const { return point(x - q.x, y - q.y); }
+    point operator*(double t) const { return point(x * t, y * t); }
+    point operator/(double t) const { return point(x / t, y / t); }
+    double operator*(point q) const { return x * q.x + y * q.y; } // Produto Escalar (dot)
+    double operator%(point q) const { return x * q.y - y * q.x; } // Produto Vetorial (cross)
 
     int cmp(point q) const {
         if (int t = ::cmp(x, q.x)) return t;
         return ::cmp(y, q.y);
     }
+    bool operator==(point q) const { return cmp(q) == 0; }
+    bool operator!=(point q) const { return cmp(q) != 0; }
+    bool operator<(point q) const { return cmp(q) < 0; }
 
-    bool operator ==(point q) const { return cmp(q) == 0; }
-    bool operator !=(point q) const { return cmp(q) != 0; }
-    bool operator <(point q) const { return cmp(q) < 0; }
-    bool operator >(point q) const { return cmp(q) > 0; }
-    bool operator <=(point q) const { return cmp(q) <= 0; }
-    bool operator >=(point q) const { return cmp(q) >= 0; }
-
-    friend ostream& operator <<(ostream& o, point p) {
+    friend ostream& operator<<(ostream& o, point p) {
         return o << "(" << p.x << ", " << p.y << ")";
     }
-
     static point pivot;
 };
-
 point point::pivot;
 
-// Retorna a magnitude (comprimento) de um vetor
 double abs(point p) { return hypot(p.x, p.y); }
-// Retorna o ângulo do vetor em radianos com o eixo X
 double arg(point p) { return atan2(p.y, p.x); }
 
-typedef vector<point> polygon;
-typedef pair<point, double> circle;
+// --- Funções Geométricas ---
 
-int ccw(point p, point q, point r)
-{
-    return cmp((p - r) % (q - r));
-    // +1: q está à esquerda do segmento rp
-    // -1: q está à direita do segmento rp
-    // 0: Os três pontos são colineares (estão na mesma linha).
+int ccw(point p, point q, point r) {
+    return cmp((q - p) % (r - p));
+}
+
+bool on_segment(point p, point a, point b) {
+    return ccw(a, b, p) == 0 && cmp((a - p) * (b - p)) <= 0;
+}
+
+bool intersect(point a, point b, point c, point d) {
+    int o1 = ccw(c, d, a), o2 = ccw(c, d, b);
+    int o3 = ccw(a, b, c), o4 = ccw(a, b, d);
+    if (o1 * o2 < 0 && o3 * o4 < 0) return true;
+    if (on_segment(c, a, d) && o1 == 0) return true;
+    if (on_segment(b, c, d) && o2 == 0) return true;
+    if (on_segment(a, c, d) && o3 == 0) return true;
+    if (on_segment(b, c, d) && o4 == 0) return true;
+    return false;
+}
+
+double dist_point_segment(point p, point a, point b) {
+    if (cmp((p - a) * (b - a)) <= 0) return abs(p - a);
+    if (cmp((p - b) * (a - b)) <= 0) return abs(p - b);
+    return fabs((b - a) % (p - a)) / abs(b - a);
+}
+
+double angulo(point p, point q, point r) {
+    point u = p - q;
+    point v = r - q;
+    return atan2(u % v, u * v);
+}
+
+// --- Estrutura para Retas (ax + by + c = 0) ---
+struct Reta {
+    double a, b, c;
+    Reta(point p, point q) { a = p.y - q.y; b = q.x - p.x; c = p % q; }
+    Reta perpendicular(point p) const { return Reta(-b, a, b * p.x - a * p.y); }
+    double eval(point p) const { return a * p.x + b * p.y + c; }
+    double dist(point p) const { return fabs(eval(p)) / hypot(a, b); }
+    bool operator||(const Reta& r) const { return cmp(a * r.b - b * r.a) == 0; }
+    bool operator==(const Reta& r) const { return (*this || r) && cmp(a*r.c - c*r.a) == 0 && cmp(b*r.c-c*r.b)==0; }
+    point operator^(const Reta& r) const {
+        double det = a * r.b - b * r.a;
+        return point((b * r.c - c * r.b) / det, (c * r.a - a * r.c) / det);
+    }
+private:
+    Reta(double a, double b, double c) : a(a), b(b), c(c) {}
+};
+
+// --- Estrutura para Círculos ---
+struct Circle {
+    point o;
+    long double r;
+    Circle() {}
+    Circle(point _o, long double _r) : o(_o), r(_r) {}
+    Circle(point a, point b) { o = (a + b) / 2.0; r = abs(o - a); }
+    Circle(point a, point b, point c) {
+        Reta mediatriz_ab = Reta(a, b).perpendicular((a + b) / 2.0);
+        Reta mediatriz_bc = Reta(b, c).perpendicular((b + c) / 2.0);
+        if (mediatriz_ab || mediatriz_bc) { o = point(HUGE_VAL, HUGE_VAL); r = -1.0; }
+        else { o = mediatriz_ab ^ mediatriz_bc; r = abs(o - a); }
+    }
+    bool contains(point p) const { return cmp(abs(o - p), r) <= 0; }
+    long double getIntersectionArea(const Circle& c) const {
+        long double d = abs(o - c.o);
+        if (cmp(d, r + c.r) >= 0) return 0.0;
+        if (cmp(d, abs(r - c.r)) <= 0) { long double min_r = min(r, c.r); return PI * min_r * min_r; }
+        long double ang1 = acos((d*d + r*r - c.r*c.r) / (2*d*r));
+        long double ang2 = acos((d*d + c.r*c.r - r*r) / (2*d*c.r));
+        long double seg1 = r*r * (ang1 - 0.5 * sin(2*ang1));
+        long double seg2 = c.r*c.r * (ang2 - 0.5 * sin(2*ang2));
+        return seg1 + seg2;
+    }
+};
+
+// --- Funções para Polígonos ---
+using polygon = vector<point>;
+
+double area_triangulo(point p, point q, point r) {
+    return fabs((q - p) % (r - p)) / 2.0;
+}
+
+double area_poligono(const polygon& poly) {
+    double area_duplicada = 0.0;
+    int n = poly.size();
+    if (n < 3) return 0.0;
+    for (int i = 0; i < n; i++) {
+        area_duplicada += poly[i] % poly[(i + 1) % n];
+    }
+    return fabs(area_duplicada) / 2.0;
+}
+
+// Retorna: 2 se DENTRO, 1 se NA BORDA, 0 se FORA.
+int ponto_em_poligono(const polygon& poly, point p) {
+    if (poly.size() < 3) return 0;
+    double total_angle = 0;
+    int n = poly.size();
+    for (int i = 0; i < n; i++) {
+        point p1 = poly[i], p2 = poly[(i + 1) % n];
+        if (ccw(p1, p2, p) == 0 && on_segment(p, p1, p2)) return 1;
+        total_angle += atan2((p1 - p) % (p2 - p), (p1 - p) * (p2 - p));
+    }
+    return cmp(abs(total_angle), PI) > 0 ? 2 : 0;
+}
+
+// --- Fecho Convexo (Convex Hull) ---
+bool cmp_polar(point a, point b) {
+    int order = ccw(point::pivot, a, b);
+    if (order == 0) return cmp(abs(a - point::pivot), abs(b - point::pivot)) < 0;
+    return order > 0;
+}
+
+void fecho_convexo(vector<point>& pts, bool include_collinear = false) {
+    if (pts.size() <= 2) return;
+    int pivot_idx = 0;
+    for (int i = 1; i < pts.size(); i++) {
+        if (cmp(pts[i].y, pts[pivot_idx].y) < 0 || 
+           (cmp(pts[i].y, pts[pivot_idx].y) == 0 && cmp(pts[i].x, pts[pivot_idx].x) < 0)) {
+            pivot_idx = i;
+        }
+    }
+    swap(pts[0], pts[pivot_idx]);
+    point::pivot = pts[0];
+    sort(pts.begin() + 1, pts.end(), cmp_polar);
+    if (include_collinear) {
+        int i = (int)pts.size() - 1;
+        while (i > 0 && ccw(point::pivot, pts[i], pts.back()) == 0) i--;
+        reverse(pts.begin() + i + 1, pts.end());
+    }
+    vector<point> hull;
+    for (const auto& p : pts) {
+        while (hull.size() > 1) {
+            int decision = ccw(hull[hull.size() - 2], hull.back(), p);
+            if (decision < 0 || (decision == 0 && !include_collinear)) {
+                hull.pop_back();
+            } else { break; }
+        }
+        hull.push_back(p);
+    }
+    pts = hull;
 }
 ```
-### Template Básico para Geometria 2D (top
+### Template Básico para Geometria 2D
 ```cpp
 #include <bits/stdc++.h>
 #define REP(i,n) for(int i=0;i<(int)n;++i)
@@ -1394,7 +1501,14 @@ double dist_point_segment(point p, point a, point b) {
     return fabs((b - a) % (p - a)) / abs(b - a);
 }
 
+//calculando area triangulo com 3 pontos
+double area_triangulo(point p, point q, point r) {
+    return fabs((q - p) % (r - p)) / 2.0;
+}
+
 // --- Funções para Polígonos ---
+using polygon = vector<point>;
+// adicionar o poligono que ta embaixo na função da area;
 // Verifica se um ponto está dentro, na borda ou fora de um polígono.
 // Retorna: 2 se DENTRO, 1 se NA BORDA, 0 se FORA.
 int ponto_em_poligono(const polygon& poly, point p) {
@@ -1422,6 +1536,7 @@ int ponto_em_poligono(const polygon& poly, point p) {
     return cmp(abs(total_angle), PI) > 0 ? 2 : 0;
 }
 
+
 // --- Estrutura para Retas (ax + by + c = 0) ---
 
 struct Reta {
@@ -1434,11 +1549,16 @@ struct Reta {
         c = p % q;
     }
 
-    // Avalia a equação da reta para um ponto p
+    // Avalia a equação da reta para um ponto p (eval(p) == 0 quer dizer que ta na reta o ponto)
     double eval(point p) const { return a * p.x + b * p.y + c; }
 
     // Distância de um ponto p à reta (infinita)
     double dist(point p) const { return fabs(eval(p)) / hypot(a, b); }
+
+    // Retorna uma reta perpendicular que passa por p
+    Reta perpendicular(point p) const {
+        return Reta(-b, a, b * p.x - a * p.y);
+    }
 
     // --- Operadores ---
 
@@ -1457,6 +1577,77 @@ struct Reta {
     point operator^(const Reta& r) const {
         double det = a * r.b - b * r.a;
         return point((b * r.c - c * r.b) / det, (c * r.a - a * r.c) / det);
+    }
+
+private:
+    // Construtor privado para uso interno (ex: no método perpendicular)
+    Reta(double a, double b, double c) : a(a), b(b), c(c) {}
+};
+
+
+// --- Estrutura para Círculos ---
+
+struct Circle {
+    point o;
+    long double r;
+
+    Circle() {}
+    Circle(point _o, long double _r) : o(_o), r(_r) {}
+
+    // Círculo cujo diâmetro é o segmento AB
+    Circle(point a, point b) {
+        o = (a + b) / 2.0;
+        r = abs(o - a);
+    }
+
+    // Círculo que passa por três pontos (circuncírculo do triângulo ABC)
+    Circle(point a, point b, point c) {
+        // Encontra o ponto de interseção das mediatrizes de AB e BC
+        Reta ab(a, b);
+        Reta bc(b, c);
+        Reta mediatriz_ab = ab.perpendicular((a + b) / 2.0);
+        Reta mediatriz_bc = bc.perpendicular((b + c) / 2.0);
+
+        // Se as mediatrizes forem paralelas, os pontos são colineares
+        if (mediatriz_ab || mediatriz_bc) {
+            o = point(HUGE_VAL, HUGE_VAL); // Ponto inválido
+            r = -1.0;                      // Raio inválido
+        } else {
+            o = mediatriz_ab ^ mediatriz_bc;
+            r = abs(o - a);
+        }
+    }
+
+    // Verifica se o ponto p está dentro ou na borda do círculo
+    bool contains(point p) const {
+        return cmp(abs(o - p), r) <= 0;
+    }
+
+    // Calcula a área da interseção com outro círculo 'c'
+    long double getIntersectionArea(const Circle& c) const {
+        long double d = abs(o - c.o);
+        
+        // Caso 1: Círculos não se tocam ou se tocam em apenas um ponto
+        if (cmp(d, r + c.r) >= 0) {
+            return 0.0;
+        }
+        // Caso 2: Um círculo contém o outro
+        if (cmp(d, abs(r - c.r)) <= 0) {
+            long double min_r = min(r, c.r);
+            return PI * min_r * min_r;
+        }
+
+        // Caso 3: Sobreposição parcial
+        // A área é a soma das áreas de dois segmentos circulares.
+        // Usamos a Lei dos Cossenos para encontrar os ângulos dos setores.
+        long double angulo1 = acos((d*d + r*r - c.r*c.r) / (2*d*r));
+        long double angulo2 = acos((d*d + c.r*c.r - r*r) / (2*d*c.r));
+
+        // Área do setor - Área do triângulo = Área do segmento
+        long double area_segmento1 = r*r * (angulo1 - 0.5 * sin(2*angulo1));
+        long double area_segmento2 = c.r*c.r * (angulo2 - 0.5 * sin(2*angulo2));
+        
+        return area_segmento1 + area_segmento2;
     }
 };
 ```
@@ -1658,97 +1849,6 @@ double closest_pair(vector<point>& pts) {
     
     // A função recursiva retorna a distância ao quadrado, então tiramos a raiz no final.
     return sqrt(closest_pair_recursive(pts));
-}
-```
-### Template Básico para Geometria 2D (Gemini)
-Este template define uma estrutura point para representar pontos ou vetores em um plano 2D e inclui as operações geométricas mais comuns. A precisão de ponto flutuante é tratada com uma constante EPS.
-```cpp
-#include <iostream>
-#include <vector>
-#include <cmath>
-#include <algorithm>
-
-using namespace std;
-
-const double EPS = 1e-9;
-
-// Retorna -1 se x < 0, 0 se x == 0, 1 se x > 0
-int sgn(double x) {
-    return (x > EPS) - (x < -EPS);
-}
-
-struct point {
-    double x, y;
-
-    // Construtores
-    point() : x(0), y(0) {}
-    point(double x, double y) : x(x), y(y) {}
-
-    // Operadores
-    point operator+(const point& o) const { return point(x + o.x, y + o.y); }
-    point operator-(const point& o) const { return point(x - o.x, y - o.y); }
-    point operator*(double s) const { return point(x * s, y * s); }
-    point operator/(double s) const { return point(x / s, y / s); }
-
-    // Comparações (considerando EPS)
-    bool operator==(const point& o) const {
-        return sgn(x - o.x) == 0 && sgn(y - o.y) == 0;
-    }
-    bool operator<(const point& o) const {
-        if (sgn(x - o.x) != 0) return x < o.x;
-        return y < o.y;
-    }
-
-    // Métodos
-    double norm_sq() const { return x * x + y * y; }
-    double norm() const { return sqrt(norm_sq()); }
-    point unit() const { return *this / norm(); }
-};
-
-// Produto escalar
-double dot(point p, point q) {
-    return p.x * q.x + p.y * q.y;
-}
-
-// Produto vetorial (2D)
-double cross(point p, point q) {
-    return p.x * q.y - p.y * q.x;
-}
-
-// Distância euclidiana entre dois pontos
-double dist(point p, point q) {
-    return (p - q).norm();
-}
-
-// Área de um triângulo a partir de seus vértices
-double area(point p, point q, point r) {
-    return fabs(cross(q - p, r - p)) / 2.0;
-}
-
-// Define um polígono como um vetor de pontos
-typedef vector<point> polygon;
-
-// Área de um polígono (fórmula de Shoelace)
-// A área é positiva se os vértices estiverem em sentido anti-horário, negativa caso contrário.
-double signed_area(const polygon& p) {
-    double area = 0;
-    int n = p.size();
-    for (int i = 0; i < n; i++) {
-        area += cross(p[i], p[(i + 1) % n]);
-    }
-    return area / 2.0;
-}
-
-// Verifica se um ponto está dentro de um polígono (algoritmo do número de enrolamento)
-// Funciona para polígonos simples (não auto-intersecantes).
-bool is_inside(const polygon& P, point p) {
-    double angle = 0;
-    int n = P.size();
-    for(int i = 0; i < n; i++) {
-        point p1 = P[i], p2 = P[(i + 1) % n];
-        angle += atan2(cross(p1 - p, p2 - p), dot(p1 - p, p2 - p));
-    }
-    return sgn(angle) != 0;
 }
 ```
 
@@ -2165,9 +2265,39 @@ int main(){
     return 0;
 }
 ```
+### Maior Subsequência Crescente (LIS)
+Solução Otimizada com Busca Binária - **O(NlogN)**
+```cpp
+// Encontra o comprimento da LIS em O(N log N)
+// Solução padrão para N grande (ex: N <= 10^5)
+int lis_nlogn(const vector<int>& arr) {
+    if (arr.empty()) return 0;
 
+    // 'tails' armazena a menor "cauda" (último elemento) para uma
+    // subsequência crescente de um determinado comprimento.
+    vector<int> tails;
+    tails.push_back(arr[0]);
 
+    for (int i = 1; i < arr.size(); i++) {
+        int num = arr[i];
+        
+        // Se 'num' é maior que a cauda da LIS mais longa,
+        // ele estende a LIS.
+        if (num > tails.back()) {
+            tails.push_back(num);
+        } else {
+            // Caso contrário, encontramos a menor cauda que é >= 'num'
+            // e a substituímos por 'num'. Isso nos dá uma LIS de mesmo
+            // comprimento, mas com um final menor, aumentando a chance
+            // de estendê-la no futuro.
+            auto it = lower_bound(tails.begin(), tails.end(), num);
+            *it = num;
+        }
+    }
 
+    return tails.size();
+}
+```
 
 
 
